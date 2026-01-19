@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type {
     IExecuteFunctions,
     INodeType,
@@ -19,25 +21,27 @@ import { microsoftApiRequest, microsoftApiRequestAllItems } from './transport';
 
 export class MicrosoftTeamsLiteTrigger implements INodeType {
     description: INodeTypeDescription = {
-        displayName: 'Microsoft Teams Trigger (Lite)',
+        displayName: 'Microsoft Teams (Lite) Trigger',
         name: 'microsoftTeamsLiteTrigger',
         icon: 'file:teams.svg',
         group: ['trigger'],
         version: 1,
         description:
             'Triggers workflows in n8n based on events from Microsoft Teams, such as new messages or team updates, using specified configurations. It uses minimal permissions',
-        subtitle: 'Microsoft Teams Trigger (Lite)',
+        subtitle: 'Microsoft Teams (Lite) Trigger',
         defaults: {
-            name: 'Microsoft Teams Trigger (Lite)',
+            name: 'Microsoft Teams (Lite) Trigger',
         },
         credentials: [
             {
+                // eslint-disable-next-line @n8n/community-nodes/no-credential-reuse
                 name: 'microsoftOAuth2Api',
                 required: true,
             },
         ],
         inputs: [],
         outputs: [NodeConnectionTypes.Main],
+        usableAsTool: true,
         webhooks: [
             {
                 name: 'default',

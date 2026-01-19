@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	IDataObject,
 	JsonObject,
 	IHttpRequestMethods,
-	IRequestOptions,
 	IHookFunctions,
+	IHttpRequestOptions,
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 
@@ -20,25 +21,26 @@ export async function microsoftApiRequest(
 	uri?: string,
 	headers: IDataObject = {},
 ): Promise<any> {
-	const options: IRequestOptions = {
+	const options: IHttpRequestOptions = {
 		headers: {
 			'Content-Type': 'application/json',
 		},
 		method,
 		body,
 		qs,
-		uri: uri || `https://graph.microsoft.com${resource}`,
+		url: uri || `https://graph.microsoft.com${resource}`,
 		json: true,
 	};
 	try {
 		if (Object.keys(headers).length !== 0) {
 			options.headers = Object.assign({}, options.headers, headers);
 		}
-		return await this.helpers.requestOAuth2.call(this, 'microsoftTeamsOAuth2Api', options);
+		return await this.helpers.httpRequestWithAuthentication.call(this, 'microsoftTeamsOAuth2Api', options);
 	} catch (error) {
 		const errorOptions: IDataObject = {};
 		if (error.error?.error) {
 			const httpCode = error.statusCode;
+			// eslint-disable-next-line no-ex-assign
 			error = error.error.error;
 			error.statusCode = httpCode;
 			errorOptions.message = error.message;

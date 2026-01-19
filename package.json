@@ -1,49 +1,39 @@
 {
-	"name": "n8n-nodes-msteams-lite",
-	"version": "0.1.0",
-	"description": "",
-	"license": "MIT",
-	"homepage": "",
-	"keywords": [
-		"n8n-community-node-package"
-	],
-	"author": {
-		"name": "Roman Schiefer",
-		"email": "roman.schiefer@gmail.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/gonzochic/n8n-nodes-msteams-lite.git"
-	},
-	"scripts": {
-		"build": "n8n-node build",
-		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
-		"lint": "n8n-node lint",
-		"lint:fix": "n8n-node lint --fix",
-		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
-	},
-	"files": [
-		"dist"
-	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"strict": true,
-		"nodes": [
-			"dist/nodes/MicrosoftTeamsLite/MicrosoftTeamsLite.node.js",
-			"dist/nodes/MicrosoftTeamsLite/MicrosoftTeamsLiteTrigger.node.js"
-		]
-	},
-	"devDependencies": {
-		"@n8n/node-cli": "*",
-		"eslint": "9.32.0",
-		"prettier": "3.6.2",
-		"release-it": "^19.0.4",
-		"typescript": "5.9.2"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "*",
-		"n8n-nodes-base": "^1.121.10"
-	}
+  "name": "n8n-nodes-msteams-lite",
+  "version": "0.1.0",
+  "description": "Microsoft Teams (Lite) nodes for n8n - A minimal permission set integration for Microsoft Teams in n8n workflows.",
+  "license": "MIT",
+  "homepage": "",
+  "keywords": ["n8n-community-node-package"],
+  "author": { "name": "Roman Schiefer", "email": "roman.schiefer@gmail.com" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gonzochic/n8n-nodes-msteams-lite.git"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "files": ["dist"],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": false,
+    "nodes": [
+      "dist/nodes/MicrosoftTeamsLite/MicrosoftTeamsLite.node.js",
+      "dist/nodes/MicrosoftTeamsLite/MicrosoftTeamsLiteTrigger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "release-it": "^19.0.4",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": { "n8n-workflow": "*", "n8n-nodes-base": "^1.121.10" }
 }

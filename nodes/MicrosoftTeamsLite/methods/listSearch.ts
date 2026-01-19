@@ -1,3 +1,5 @@
+/* eslint-disable no-empty */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
 	NodeOperationError,
 	type IDataObject,
@@ -189,7 +191,7 @@ export async function getPlans(
 
 	try {
 		groupId = this.getCurrentNodeParameter('groupId', { extractValue: true }) as string;
-	} catch (error) {}
+	} catch (error) { }
 
 	const operation = this.getNodeParameter('operation', 0) as string;
 
@@ -223,7 +225,7 @@ export async function getBuckets(
 
 	try {
 		planId = this.getCurrentNodeParameter('planId', { extractValue: true }) as string;
-	} catch (error) {}
+	} catch (error) { }
 
 	const operation = this.getNodeParameter('operation', 0) as string;
 
@@ -257,7 +259,7 @@ export async function getMembers(
 
 	try {
 		groupId = this.getCurrentNodeParameter('groupId', { extractValue: true }) as string;
-	} catch (error) {}
+	} catch (error) { }
 
 	const operation = this.getNodeParameter('operation', 0) as string;
 
