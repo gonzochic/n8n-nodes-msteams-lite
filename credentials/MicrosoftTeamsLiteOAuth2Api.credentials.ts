@@ -9,7 +9,6 @@ export class MicrosoftTeamsLiteOAuth2Api implements ICredentialType {
 
     displayName = 'Reduced Permissions Microsoft Teams OAuth2 API';
 
-    // TODO: Update
     documentationUrl = 'https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow';
 
     properties: INodeProperties[] = [

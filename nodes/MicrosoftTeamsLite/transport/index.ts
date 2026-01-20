@@ -33,7 +33,7 @@ export async function microsoftApiRequest(
 		if (Object.keys(headers).length !== 0) {
 			options.headers = Object.assign({}, options.headers, headers);
 		}
-		return await this.helpers.httpRequestWithAuthentication.call(this, 'microsoftTeamsOAuth2Api', options);
+		return await this.helpers.httpRequestWithAuthentication.call(this, 'microsoftTeamsLiteOAuth2Api', options);
 	} catch (error) {
 		const errorOptions: IDataObject = {};
 		if (error.error?.error) {
