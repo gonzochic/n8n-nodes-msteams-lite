@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-msteams-lite",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Microsoft Teams (Lite) nodes for n8n - A minimal permission set integration for Microsoft Teams in n8n workflows.",
   "license": "MIT",
   "homepage": "",
@@ -35,8 +35,8 @@
       "dist/nodes/MicrosoftTeamsLite/MicrosoftTeamsLiteTrigger.node.js"
     ],
     "credentials": [
-			"dist/credentials/MicrosoftTeamsLiteOAuth2Api.credentials.js"
-		]
+      "dist/credentials/MicrosoftTeamsLiteOAuth2Api.credentials.js"
+    ]
   },
   "devDependencies": {
     "@n8n/node-cli": "*",
