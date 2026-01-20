@@ -3,9 +3,8 @@ import { SEND_AND_WAIT_OPERATION, type INodeProperties } from 'n8n-workflow';
 import * as create from './create.operation';
 import * as get from './get.operation';
 import * as getAll from './getAll.operation';
-import * as sendAndWait from './sendAndWait.operation';
 
-export { create, get, getAll, sendAndWait };
+export { create, get, getAll };
 
 export const description: INodeProperties[] = [
 	{
@@ -50,5 +49,4 @@ export const description: INodeProperties[] = [
 	...create.description,
 	...get.description,
 	...getAll.description,
-	...sendAndWait.description,
 ];

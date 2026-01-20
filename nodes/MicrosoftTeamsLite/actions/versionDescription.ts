@@ -3,8 +3,6 @@ import { NodeConnectionTypes, type INodeTypeDescription } from 'n8n-workflow';
 
 import * as chatMessage from './chatMessage';
 
-import { sendAndWaitWebhooksDescription } from 'n8n-nodes-base/dist/utils/sendAndWait/descriptions';
-import { SEND_AND_WAIT_WAITING_TOOLTIP } from 'n8n-nodes-base/dist/utils/sendAndWait/utils';
 
 export const versionDescription: INodeTypeDescription = {
 	displayName: 'Microsoft Teams (Lite)',
@@ -19,12 +17,10 @@ export const versionDescription: INodeTypeDescription = {
 	outputs: [NodeConnectionTypes.Main],
 	credentials: [
 		{
-			name: 'microsoftOAuth2Api',
+			name: 'microsoftTeamsLiteOAuth2Api',
 			required: true,
 		},
 	],
-	waitingNodeTooltip: SEND_AND_WAIT_WAITING_TOOLTIP,
-	webhooks: sendAndWaitWebhooksDescription,
 	usableAsTool: true,
 	properties: [
 		{

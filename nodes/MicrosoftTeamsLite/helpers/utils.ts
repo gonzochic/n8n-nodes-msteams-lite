@@ -4,18 +4,8 @@ export function prepareMessage(
 	this: IExecuteFunctions | ILoadOptionsFunctions,
 	message: string,
 	contentType: string,
-	includeLinkToWorkflow: boolean,
-	instanceId?: string,
 ) {
-	// TODO: Remove or adapt this to the new Teams Node Lite branding
-	if (includeLinkToWorkflow) {
-		const { id } = this.getWorkflow();
-		const link = `${this.getInstanceBaseUrl()}workflow/${id}?utm_source=n8n-internal&utm_medium=powered_by&utm_campaign=${encodeURIComponent(
-			'n8n-nodes-base.microsoftTeams',
-		)}${instanceId ? '_' + instanceId : ''}`;
-		contentType = 'html';
-		message = `${message}<br><br><em> Powered by <a href="${link}">this n8n workflow</a> </em>`;
-	}
+
 
 	return {
 		body: {

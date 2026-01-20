@@ -33,7 +33,10 @@
     "nodes": [
       "dist/nodes/MicrosoftTeamsLite/MicrosoftTeamsLite.node.js",
       "dist/nodes/MicrosoftTeamsLite/MicrosoftTeamsLiteTrigger.node.js"
-    ]
+    ],
+    "credentials": [
+			"dist/credentials/MicrosoftTeamsLiteOAuth2Api.credentials.js"
+		]
   },
   "devDependencies": {
     "@n8n/node-cli": "*",
@@ -43,7 +46,6 @@
     "typescript": "5.9.2"
   },
   "peerDependencies": {
-    "n8n-workflow": "*",
-    "n8n-nodes-base": "^1.121.10"
+    "n8n-workflow": "*"
   }
 }

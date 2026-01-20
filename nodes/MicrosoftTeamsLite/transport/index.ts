@@ -10,8 +10,6 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 
-import { capitalize } from 'n8n-nodes-base/dist/utils/utilities';
-
 export async function microsoftApiRequest(
 	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
 	method: IHttpRequestMethods,
@@ -46,7 +44,7 @@ export async function microsoftApiRequest(
 			errorOptions.message = error.message;
 
 			if (error.code === 'NotFound' && error.message === 'Resource not found') {
-				const nodeResource = capitalize(this.getNodeParameter('resource', 0) as string);
+				const nodeResource = this.getNodeParameter('resource', 0) as string;
 				errorOptions.message = `${nodeResource} not found`;
 			}
 		}

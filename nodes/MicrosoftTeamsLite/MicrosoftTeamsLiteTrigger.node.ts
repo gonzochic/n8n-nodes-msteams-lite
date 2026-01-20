@@ -34,8 +34,7 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
         },
         credentials: [
             {
-                // eslint-disable-next-line @n8n/community-nodes/no-credential-reuse
-                name: 'microsoftOAuth2Api',
+                name: 'microsoftTeamsLiteOAuth2Api',
                 required: true,
             },
         ],

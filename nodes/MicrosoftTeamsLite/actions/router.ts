@@ -3,12 +3,10 @@ import {
 	type IDataObject,
 	type INodeExecutionData,
 	NodeOperationError,
-	SEND_AND_WAIT_OPERATION,
 } from 'n8n-workflow';
 
 import * as chatMessage from './chatMessage';
 import type { MicrosoftTeamsType } from './node.type';
-import { configureWaitTillDate } from 'n8n-nodes-base/dist/utils/sendAndWait/configureWaitTillDate.util';
 
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
@@ -18,24 +16,10 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 	const resource = this.getNodeParameter<MicrosoftTeamsType>('resource', 0);
 	const operation = this.getNodeParameter('operation', 0);
 
-	const instanceId = this.getInstanceId();
-
 	const microsoftTeamsTypeData = {
 		resource,
 		operation,
 	} as MicrosoftTeamsType;
-
-	if (
-		microsoftTeamsTypeData.resource === 'chatMessage' &&
-		microsoftTeamsTypeData.operation === SEND_AND_WAIT_OPERATION
-	) {
-		await chatMessage[microsoftTeamsTypeData.operation].execute.call(this, 0, instanceId);
-
-		const waitTill = configureWaitTillDate(this);
-
-		await this.putExecutionToWait(waitTill);
-		return [items];
-	}
 
 	for (let i = 0; i < items.length; i++) {
 		try {
@@ -44,7 +28,6 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 					responseData = await chatMessage[microsoftTeamsTypeData.operation].execute.call(
 						this,
 						i,
-						instanceId,
 					);
 					break;
 				default:

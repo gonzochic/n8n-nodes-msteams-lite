@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type INodeProperties, type IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
-
-import { updateDisplayOptions } from 'n8n-nodes-base/dist/utils/utilities';
+import { type INodeProperties, type IExecuteFunctions, NodeOperationError, updateDisplayOptions } from 'n8n-workflow';
 
 import { chatRLC } from '../../descriptions';
 import { microsoftApiRequest } from '../../transport';

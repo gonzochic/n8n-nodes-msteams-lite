@@ -1,13 +1,29 @@
-import type { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
+import { type INodeProperties, type IExecuteFunctions, type IDataObject, updateDisplayOptions } from 'n8n-workflow';
 
-import { updateDisplayOptions } from 'n8n-nodes-base/dist/utils/utilities';
-
-import { chatRLC } from '../../descriptions';
 import { prepareMessage } from '../../helpers/utils';
 import { microsoftApiRequest } from '../../transport';
 
+// TODO: Load Sender ID from POST https://graph.microsoft.com/v1.0/chats
+
 const properties: INodeProperties[] = [
-	chatRLC,
+	{
+		displayName: "Sender",
+		name: "sender",
+		type: "string",
+		required: true,
+		default: "",
+		placeholder: "e.g. user@company.com",
+		description: "The (entra) email address of the message sender",
+	},
+	{
+		displayName: "Recipient Chat",
+		name: "recipient",
+		type: "string",
+		required: true,
+		default: "",
+		placeholder: "e.g. user@company.com",
+		description: "The (entra) email address of the message recipient",
+	},
 	{
 		displayName: 'Content Type',
 		name: 'contentType',
@@ -37,24 +53,6 @@ const properties: INodeProperties[] = [
 			rows: 2,
 		},
 	},
-	{
-		displayName: 'Options',
-		name: 'options',
-		type: 'collection',
-		default: {},
-		description: 'Other options to set',
-		placeholder: 'Add option',
-		options: [
-			{
-				displayName: 'Include Link to Workflow',
-				name: 'includeLinkToWorkflow',
-				type: 'boolean',
-				default: true,
-				description:
-					'Whether to append a link to this workflow at the end of the message. This is helpful if you have many workflows sending messages.',
-			},
-		],
-	},
 ];
 
 const displayOptions = {
@@ -66,22 +64,41 @@ const displayOptions = {
 
 export const description = updateDisplayOptions(displayOptions, properties);
 
-export async function execute(this: IExecuteFunctions, i: number, instanceId: string) {
-	// https://docs.microsoft.com/en-us/graph/api/channel-post-messages?view=graph-rest-1.0&tabs=http
-
-	const chatId = this.getNodeParameter('chatId', i, '', { extractValue: true }) as string;
+export async function execute(this: IExecuteFunctions, i: number) {
+	const sender = this.getNodeParameter('sender', i, '', { extractValue: true }) as string;
+	const recipient = this.getNodeParameter('recipient', i, '', { extractValue: true }) as string;
 	const contentType = this.getNodeParameter('contentType', i) as string;
 	const message = this.getNodeParameter('message', i) as string;
-	const options = this.getNodeParameter('options', i, {});
 
-	const includeLinkToWorkflow = options.includeLinkToWorkflow !== false;
+
+	// get or create chat between sender and recipient
+	const getOrCreateChatResponse = await microsoftApiRequest.call(
+		this,
+		'POST',
+		`/v1.0/chats`,
+		{
+			chatType: 'oneOnOne',
+			members: [
+				{
+					'@odata.type': '#microsoft.graph.aadUserConversationMember',
+					roles: ['owner'],
+					"user@odata.bind": "https://graph.microsoft.com/v1.0/users('" + sender + "')",
+				},
+				{
+					'@odata.type': '#microsoft.graph.aadUserConversationMember',
+					roles: ['owner'],
+					"user@odata.bind": "https://graph.microsoft.com/v1.0/users('" + recipient + "')",
+				},
+			],
+		},
+	);
+
+	const chatId = getOrCreateChatResponse.id;
 
 	const body: IDataObject = prepareMessage.call(
 		this,
 		message,
 		contentType,
-		includeLinkToWorkflow,
-		instanceId,
 	);
 
 	return await microsoftApiRequest.call(this, 'POST', `/v1.0/chats/${chatId}/messages`, body);
