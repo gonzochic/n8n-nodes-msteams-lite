@@ -27,3 +27,17 @@ export interface SubscriptionResponse {
 	notificationUrl: string;
 	resource: string;
 }
+
+export interface ChatMessage {
+	id: string;
+	messageType: string;
+	createdDateTime: string;
+	from?: {
+		user?: { id: string; displayName: string };
+	};
+	body: {
+		contentType: string;
+		content: string;
+	};
+	[key: string]: unknown;
+}

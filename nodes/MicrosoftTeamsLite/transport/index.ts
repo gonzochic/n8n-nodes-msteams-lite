@@ -6,12 +6,13 @@ import type {
 	JsonObject,
 	IHttpRequestMethods,
 	IHookFunctions,
+	IWebhookFunctions,
 	IHttpRequestOptions,
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 
 export async function microsoftApiRequest(
-	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions | IWebhookFunctions,
 	method: IHttpRequestMethods,
 	resource: string,
 	body: any = {},

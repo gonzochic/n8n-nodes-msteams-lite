@@ -1,8 +1,19 @@
 import type { IHookFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
-import type { TeamResponse, ChannelResponse, SubscriptionResponse } from './types';
+import type { TeamResponse, ChannelResponse, SubscriptionResponse, ChatMessage } from './types';
+
+export { ChatMessage };
 import { microsoftApiRequest } from '../transport';
+
+export function extractChatIdFromResource(resourcePath: string): string | null {
+	// eslint-disable-next-line no-useless-escape
+	const chatMatch = resourcePath.match(/\/chats\/([^\/]+)(?:\/messages)?/);
+	if (chatMatch && chatMatch[1]) {
+		return decodeURIComponent(chatMatch[1]);
+	}
+	return null;
+}
 
 export async function fetchAllTeams(this: IHookFunctions): Promise<TeamResponse[]> {
 	const { value: teams } = (await microsoftApiRequest.call(

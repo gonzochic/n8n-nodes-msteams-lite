@@ -14,8 +14,8 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError, NodeConnectionTypes } from 'n8n-workflow';
 
-import type { WebhookNotification, SubscriptionResponse } from './helpers/types';
-import { createSubscription, getResourcePath } from './helpers/utils-trigger';
+import type { WebhookNotification, SubscriptionResponse, ChatMessage } from './helpers/types';
+import { createSubscription, getResourcePath, extractChatIdFromResource } from './helpers/utils-trigger';
 import { listSearch } from './methods';
 import { microsoftApiRequest, microsoftApiRequestAllItems } from './transport';
 
@@ -123,6 +123,19 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
                     show: {
                         event: ['newChatMessage'],
                         watchAllChats: [false],
+                    },
+                },
+            },
+            {
+                displayName: 'Fetch Full Message',
+                name: 'fetchFullMessage',
+                type: 'boolean',
+                default: false,
+                description:
+                    'Whether to fetch the full message content from the API. When disabled, only the notification metadata (IDs) is returned.',
+                displayOptions: {
+                    show: {
+                        event: ['newChatMessage'],
                     },
                 },
             },
@@ -255,15 +268,79 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
             return { noWebhookResponse: true };
         }
 
-        const eventNotifications = req.body.value as WebhookNotification[];
-        const response: IWebhookResponseData = {
-            workflowData: eventNotifications.map((event) => [
-                {
-                    json: (event.resourceData as IDataObject) ?? event,
-                } as INodeExecutionData,
-            ]),
-        };
+        const event = this.getNodeParameter('event', 'newChatMessage') as string;
+        const fetchFullMessage = this.getNodeParameter('fetchFullMessage', false) as boolean;
 
-        return response;
+        const eventNotifications = req.body.value as WebhookNotification[];
+
+        // If fetchFullMessage is disabled or event is not newChatMessage, return notification data only
+        if (!fetchFullMessage || event !== 'newChatMessage') {
+            const response: IWebhookResponseData = {
+                workflowData: eventNotifications.map((notification) => [
+                    {
+                        json: (notification.resourceData as IDataObject) ?? notification,
+                    } as INodeExecutionData,
+                ]),
+            };
+            return response;
+        }
+
+        // Fetch full message content for each notification
+        const workflowData = await Promise.all(
+            eventNotifications.map(async (notification) => {
+                try {
+                    // Extract chatId from notification resource path
+                    const chatId = extractChatIdFromResource(notification.resource);
+                    const messageId = notification.resourceData?.id;
+
+                    if (!chatId || !messageId) {
+                        // Cannot extract IDs, return notification with error info
+                        return [
+                            {
+                                json: {
+                                    ...(notification.resourceData as IDataObject),
+                                    _subscriptionId: notification.subscriptionId,
+                                    _tenantId: notification.tenantId,
+                                    _fetchError: 'Could not extract chatId or messageId from notification',
+                                    _originalNotification: notification,
+                                } as IDataObject,
+                            } as INodeExecutionData,
+                        ];
+                    }
+
+                    // Fetch the full message from Graph API
+                    const fullMessage = (await microsoftApiRequest.call(
+                        this,
+                        'GET',
+                        `/v1.0/chats/${chatId}/messages/${messageId}`,
+                    )) as ChatMessage;
+
+                    return [
+                        {
+                            json: {
+                                ...fullMessage,
+                                _subscriptionId: notification.subscriptionId,
+                                _tenantId: notification.tenantId,
+                            } as IDataObject,
+                        } as INodeExecutionData,
+                    ];
+                } catch (error) {
+                    // On API error, return notification data with error info
+                    return [
+                        {
+                            json: {
+                                ...(notification.resourceData as IDataObject),
+                                _subscriptionId: notification.subscriptionId,
+                                _tenantId: notification.tenantId,
+                                _fetchError: (error as Error).message || 'Failed to fetch full message',
+                                _originalNotification: notification,
+                            } as IDataObject,
+                        } as INodeExecutionData,
+                    ];
+                }
+            }),
+        );
+
+        return { workflowData };
     }
 }
