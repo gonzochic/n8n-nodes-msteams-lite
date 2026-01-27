@@ -2,19 +2,10 @@ import { type INodeProperties, type IExecuteFunctions, type IDataObject, updateD
 
 import { prepareMessage } from '../../helpers/utils';
 import { microsoftApiRequest } from '../../transport';
-
-// TODO: Load Sender ID from POST https://graph.microsoft.com/v1.0/chats
+import { senderRLC } from '../../descriptions/rlc.description';
 
 const properties: INodeProperties[] = [
-	{
-		displayName: "Sender",
-		name: "sender",
-		type: "string",
-		required: true,
-		default: "",
-		placeholder: "e.g. user@company.com",
-		description: "The (entra) email address of the message sender",
-	},
+	senderRLC,
 	{
 		displayName: "Recipient Chat",
 		name: "recipient",

@@ -280,3 +280,17 @@ export async function getMembers(
 	const results = filterSortSearchListItems(returnData, filter);
 	return { results };
 }
+
+export async function getCurrentUser(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<INodeListSearchResult> {
+	const user = (await microsoftApiRequest.call(this, 'GET', '/v1.0/me')) as IDataObject;
+
+	const result = {
+		name: `${user.displayName} (${user.userPrincipalName})`,
+		value: user.userPrincipalName as string,
+	};
+
+	return { results: [result] };
+}

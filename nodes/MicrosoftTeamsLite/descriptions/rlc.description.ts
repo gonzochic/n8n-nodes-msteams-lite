@@ -267,3 +267,30 @@ export const memberRLC: INodeProperties = {
 		},
 	],
 };
+
+export const senderRLC: INodeProperties = {
+	displayName: 'Sender',
+	name: 'sender',
+	type: 'resourceLocator',
+	default: { mode: 'list', value: '' },
+	required: true,
+	description: 'The account to send the message from',
+	modes: [
+		{
+			displayName: 'From List',
+			name: 'list',
+			type: 'list',
+			placeholder: 'Select your account...',
+			typeOptions: {
+				searchListMethod: 'getCurrentUser',
+				searchable: false,
+			},
+		},
+		{
+			displayName: 'By Email',
+			name: 'id',
+			type: 'string',
+			placeholder: 'e.g. user@company.com',
+		},
+	],
+};
