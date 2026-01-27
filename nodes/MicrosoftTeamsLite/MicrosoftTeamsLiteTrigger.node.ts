@@ -15,6 +15,7 @@ import type {
 import { NodeApiError, NodeConnectionTypes } from 'n8n-workflow';
 
 import type { WebhookNotification, SubscriptionResponse, ChatMessage } from './helpers/types';
+import { SUBSCRIPTION_VALIDITY_THRESHOLD_MS } from './helpers/types';
 import { createSubscription, getResourcePath, extractChatIdFromResource } from './helpers/utils-trigger';
 import { listSearch } from './methods';
 import { microsoftApiRequest, microsoftApiRequestAllItems } from './transport';
@@ -166,10 +167,9 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
                     );
 
                     const now = new Date();
-                    const thresholdMs = 5 * 60 * 1000;
                     const validSubscriptions = matchingSubscriptions.filter((subscription) => {
                         const expiration = new Date(subscription.expirationDateTime);
-                        return expiration.getTime() - now.getTime() > thresholdMs;
+                        return expiration.getTime() - now.getTime() > SUBSCRIPTION_VALIDITY_THRESHOLD_MS;
                     });
 
                     const resourcePaths = await getResourcePath.call(this, event);

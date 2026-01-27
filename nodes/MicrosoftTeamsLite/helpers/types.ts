@@ -1,3 +1,9 @@
+// Subscription expires after ~3 days (4318 minutes is the max allowed by Microsoft Graph)
+export const SUBSCRIPTION_EXPIRATION_MINUTES = 4318;
+
+// Minimum time before expiration to consider subscription valid (5 minutes)
+export const SUBSCRIPTION_VALIDITY_THRESHOLD_MS = 5 * 60 * 1000;
+
 export interface TeamResponse {
 	id: string;
 	displayName: string;

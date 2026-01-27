@@ -1,5 +1,3 @@
-/* eslint-disable no-empty */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
 	NodeOperationError,
 	type IDataObject,
@@ -55,23 +53,7 @@ export async function getChats(
 		});
 	}
 
-	const results = returnData
-		.filter(
-			(item) =>
-				!filter ||
-				item.name.toLowerCase().includes(filter.toLowerCase()) ||
-				item.value.toString().toLowerCase().includes(filter.toLowerCase()),
-		)
-		.sort((a, b) => {
-			if (a.name.toLocaleLowerCase() < b.name.toLocaleLowerCase()) {
-				return -1;
-			}
-			if (a.name.toLocaleLowerCase() > b.name.toLocaleLowerCase()) {
-				return 1;
-			}
-			return 0;
-		});
-
+	const results = filterSortSearchListItems(returnData, filter);
 	return { results };
 }
 
@@ -150,139 +132,9 @@ export async function getChannels(
 	return { results };
 }
 
-export async function getGroups(
-	this: ILoadOptionsFunctions,
-	filter?: string,
-): Promise<INodeListSearchResult> {
-	const returnData: INodeListSearchItems[] = [];
-	// const groupSource = this.getCurrentNodeParameter('groupSource') as string;
-	const requestUrl = '/v1.0/groups' as string;
-
-	// if (groupSource === 'mine') {
-	// 	requestUrl = '/v1.0/me/transitiveMemberOf';
-	// }
-
-	const { value } = await microsoftApiRequest.call(this, 'GET', requestUrl);
-
-	for (const group of value) {
-		if (group.displayName === 'All Company') continue;
-
-		const name = group.displayName || group.mail;
-
-		if (name === undefined) continue;
-
-		returnData.push({
-			name,
-			value: group.id,
-		});
-	}
-
-	const results = filterSortSearchListItems(returnData, filter);
-	return { results };
-}
-
-export async function getPlans(
-	this: ILoadOptionsFunctions,
-	filter?: string,
-): Promise<INodeListSearchResult> {
-	const returnData: INodeListSearchItems[] = [];
-
-	let groupId = '';
-
-	try {
-		groupId = this.getCurrentNodeParameter('groupId', { extractValue: true }) as string;
-	} catch (error) { }
-
-	const operation = this.getNodeParameter('operation', 0) as string;
-
-	if (operation === 'update' && !groupId) {
-		groupId = this.getCurrentNodeParameter('updateFields.groupId', {
-			extractValue: true,
-		}) as string;
-	}
-
-	const { value } = await microsoftApiRequest.call(
-		this,
-		'GET',
-		`/v1.0/groups/${groupId}/planner/plans`,
-	);
-	for (const plan of value) {
-		returnData.push({
-			name: plan.title,
-			value: plan.id,
-		});
-	}
-	const results = filterSortSearchListItems(returnData, filter);
-	return { results };
-}
-
-export async function getBuckets(
-	this: ILoadOptionsFunctions,
-	filter?: string,
-): Promise<INodeListSearchResult> {
-	const returnData: INodeListSearchItems[] = [];
-	let planId = '';
-
-	try {
-		planId = this.getCurrentNodeParameter('planId', { extractValue: true }) as string;
-	} catch (error) { }
-
-	const operation = this.getNodeParameter('operation', 0) as string;
-
-	if (operation === 'update' && !planId) {
-		planId = this.getCurrentNodeParameter('updateFields.planId', {
-			extractValue: true,
-		}) as string;
-	}
-
-	const { value } = await microsoftApiRequest.call(
-		this,
-		'GET',
-		`/v1.0/planner/plans/${planId}/buckets`,
-	);
-	for (const bucket of value) {
-		returnData.push({
-			name: bucket.name,
-			value: bucket.id,
-		});
-	}
-	const results = filterSortSearchListItems(returnData, filter);
-	return { results };
-}
-
-export async function getMembers(
-	this: ILoadOptionsFunctions,
-	filter?: string,
-): Promise<INodeListSearchResult> {
-	const returnData: INodeListSearchItems[] = [];
-	let groupId = '';
-
-	try {
-		groupId = this.getCurrentNodeParameter('groupId', { extractValue: true }) as string;
-	} catch (error) { }
-
-	const operation = this.getNodeParameter('operation', 0) as string;
-
-	if (operation === 'update' && !groupId) {
-		groupId = this.getCurrentNodeParameter('updateFields.groupId', {
-			extractValue: true,
-		}) as string;
-	}
-	const { value } = await microsoftApiRequest.call(this, 'GET', `/v1.0/groups/${groupId}/members`);
-
-	for (const member of value) {
-		returnData.push({
-			name: member.displayName,
-			value: member.id,
-		});
-	}
-
-	const results = filterSortSearchListItems(returnData, filter);
-	return { results };
-}
-
 export async function getCurrentUser(
 	this: ILoadOptionsFunctions,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	filter?: string,
 ): Promise<INodeListSearchResult> {
 	const user = (await microsoftApiRequest.call(this, 'GET', '/v1.0/me')) as IDataObject;

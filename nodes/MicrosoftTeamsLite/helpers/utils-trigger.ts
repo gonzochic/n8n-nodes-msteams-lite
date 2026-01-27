@@ -1,9 +1,8 @@
 import type { IHookFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
-import type { TeamResponse, ChannelResponse, SubscriptionResponse, ChatMessage } from './types';
-
-export { ChatMessage };
+import type { TeamResponse, ChannelResponse, SubscriptionResponse } from './types';
+import { SUBSCRIPTION_EXPIRATION_MINUTES } from './types';
 import { microsoftApiRequest } from '../transport';
 
 export function extractChatIdFromResource(resourcePath: string): string | null {
@@ -41,7 +40,7 @@ export async function createSubscription(
 	webhookUrl: string,
 	resourcePath: string,
 ): Promise<SubscriptionResponse> {
-	const expirationTime = new Date(Date.now() + 4318 * 60 * 1000).toISOString();
+	const expirationTime = new Date(Date.now() + SUBSCRIPTION_EXPIRATION_MINUTES * 60 * 1000).toISOString();
 	const body: IDataObject = {
 		changeType: 'created',
 		notificationUrl: webhookUrl,
