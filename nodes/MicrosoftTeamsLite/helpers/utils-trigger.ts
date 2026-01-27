@@ -7,10 +7,10 @@ export { ChatMessage };
 import { microsoftApiRequest } from '../transport';
 
 export function extractChatIdFromResource(resourcePath: string): string | null {
-	// eslint-disable-next-line no-useless-escape
-	const chatMatch = resourcePath.match(/\/chats\/([^\/]+)(?:\/messages)?/);
-	if (chatMatch && chatMatch[1]) {
-		return decodeURIComponent(chatMatch[1]);
+	// Match format: chats('chatId')/messages('messageId') used by Graph API notifications
+	const match = resourcePath.match(/chats\('([^']+)'\)/);
+	if (match && match[1]) {
+		return decodeURIComponent(match[1]);
 	}
 	return null;
 }
