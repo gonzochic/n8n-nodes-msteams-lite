@@ -6,6 +6,10 @@ import {
 } from 'n8n-workflow';
 
 import * as chatMessage from './chatMessage';
+import * as channel from './channel';
+import * as channelMessage from './channelMessage';
+import * as teamMember from './teamMember';
+import * as channelMember from './channelMember';
 import type { MicrosoftTeamsType } from './node.type';
 
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -26,6 +30,27 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 			switch (microsoftTeamsTypeData.resource) {
 				case 'chatMessage':
 					responseData = await chatMessage[microsoftTeamsTypeData.operation].execute.call(
+						this,
+						i,
+					);
+					break;
+				case 'channel':
+					responseData = await channel[microsoftTeamsTypeData.operation].execute.call(this, i);
+					break;
+				case 'channelMessage':
+					responseData = await channelMessage[microsoftTeamsTypeData.operation].execute.call(
+						this,
+						i,
+					);
+					break;
+				case 'teamMember':
+					responseData = await teamMember[microsoftTeamsTypeData.operation].execute.call(
+						this,
+						i,
+					);
+					break;
+				case 'channelMember':
+					responseData = await channelMember[microsoftTeamsTypeData.operation].execute.call(
 						this,
 						i,
 					);

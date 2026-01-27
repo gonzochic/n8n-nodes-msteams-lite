@@ -146,3 +146,84 @@ export async function getCurrentUser(
 
 	return { results: [result] };
 }
+
+export async function getUsers(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<INodeListSearchResult> {
+	const returnData: INodeListSearchItems[] = [];
+	const qs: IDataObject = {
+		$top: 100,
+	};
+
+	if (filter) {
+		qs.$filter = `startswith(displayName,'${filter}') or startswith(userPrincipalName,'${filter}')`;
+	}
+
+	const { value } = (await microsoftApiRequest.call(
+		this,
+		'GET',
+		'/v1.0/users',
+		{},
+		qs,
+	)) as { value: IDataObject[] };
+
+	for (const user of value) {
+		returnData.push({
+			name: `${user.displayName} (${user.userPrincipalName})`,
+			value: user.id as string,
+		});
+	}
+
+	const results = filterSortSearchListItems(returnData, filter);
+	return { results };
+}
+
+export async function getTeamMembers(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<INodeListSearchResult> {
+	const returnData: INodeListSearchItems[] = [];
+	const teamId = this.getCurrentNodeParameter('teamId', { extractValue: true }) as string;
+
+	const { value } = (await microsoftApiRequest.call(
+		this,
+		'GET',
+		`/v1.0/teams/${teamId}/members`,
+	)) as { value: IDataObject[] };
+
+	for (const member of value) {
+		returnData.push({
+			name: `${member.displayName} (${member.email || 'No email'})`,
+			value: member.id as string,
+		});
+	}
+
+	const results = filterSortSearchListItems(returnData, filter);
+	return { results };
+}
+
+export async function getChannelMembers(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<INodeListSearchResult> {
+	const returnData: INodeListSearchItems[] = [];
+	const teamId = this.getCurrentNodeParameter('teamId', { extractValue: true }) as string;
+	const channelId = this.getCurrentNodeParameter('channelId', { extractValue: true }) as string;
+
+	const { value } = (await microsoftApiRequest.call(
+		this,
+		'GET',
+		`/v1.0/teams/${teamId}/channels/${channelId}/members`,
+	)) as { value: IDataObject[] };
+
+	for (const member of value) {
+		returnData.push({
+			name: `${member.displayName} (${member.email || 'No email'})`,
+			value: member.id as string,
+		});
+	}
+
+	const results = filterSortSearchListItems(returnData, filter);
+	return { results };
+}

@@ -149,3 +149,103 @@ export const senderRLC: INodeProperties = {
 		},
 	],
 };
+
+export const userRLC: INodeProperties = {
+	displayName: 'User',
+	name: 'userId',
+	type: 'resourceLocator',
+	default: { mode: 'list', value: '' },
+	required: true,
+	description: 'Select the user from the list or enter their ID',
+	modes: [
+		{
+			displayName: 'From List',
+			name: 'list',
+			type: 'list',
+			placeholder: 'Select a user...',
+			typeOptions: {
+				searchListMethod: 'getUsers',
+				searchable: true,
+			},
+		},
+		{
+			displayName: 'By ID',
+			name: 'id',
+			type: 'string',
+			placeholder: 'e.g. 12345678-1234-1234-1234-123456789012',
+			validation: [
+				{
+					type: 'regex',
+					properties: {
+						regex: '^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})[ \t]*',
+						errorMessage: 'Not a valid user ID',
+					},
+				},
+			],
+			extractValue: {
+				type: 'regex',
+				regex: '^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})',
+			},
+		},
+	],
+};
+
+export const teamMemberRLC: INodeProperties = {
+	displayName: 'Member',
+	name: 'memberId',
+	type: 'resourceLocator',
+	default: { mode: 'list', value: '' },
+	required: true,
+	description: 'Select the team member from the list or enter their membership ID',
+	typeOptions: {
+		loadOptionsDependsOn: ['teamId.value'],
+	},
+	modes: [
+		{
+			displayName: 'From List',
+			name: 'list',
+			type: 'list',
+			placeholder: 'Select a member...',
+			typeOptions: {
+				searchListMethod: 'getTeamMembers',
+				searchable: true,
+			},
+		},
+		{
+			displayName: 'By ID',
+			name: 'id',
+			type: 'string',
+			placeholder: 'e.g. MCMjMiMjZGNhNjE...',
+		},
+	],
+};
+
+export const channelMemberRLC: INodeProperties = {
+	displayName: 'Member',
+	name: 'memberId',
+	type: 'resourceLocator',
+	default: { mode: 'list', value: '' },
+	required: true,
+	description: 'Select the channel member from the list or enter their membership ID',
+	typeOptions: {
+		loadOptionsDependsOn: ['teamId.value', 'channelId.value'],
+	},
+	modes: [
+		{
+			displayName: 'From List',
+			name: 'list',
+			type: 'list',
+			placeholder: 'Select a member...',
+			typeOptions: {
+				searchListMethod: 'getChannelMembers',
+				searchable: true,
+			},
+		},
+		{
+			displayName: 'By ID',
+			name: 'id',
+			type: 'string',
+			placeholder: 'e.g. MCMjMiMjZGNhNjE...',
+		},
+	],
+};

@@ -1,7 +1,7 @@
 import type { IHookFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
-import type { TeamResponse, ChannelResponse, SubscriptionResponse } from './types';
+import type { ChannelResponse, SubscriptionResponse } from './types';
 import { SUBSCRIPTION_EXPIRATION_MINUTES } from './types';
 import { microsoftApiRequest } from '../transport';
 
@@ -14,13 +14,20 @@ export function extractChatIdFromResource(resourcePath: string): string | null {
 	return null;
 }
 
-export async function fetchAllTeams(this: IHookFunctions): Promise<TeamResponse[]> {
-	const { value: teams } = (await microsoftApiRequest.call(
-		this,
-		'GET',
-		'/v1.0/me/joinedTeams',
-	)) as { value: TeamResponse[] };
-	return teams;
+export function extractChannelInfoFromResource(
+	resourcePath: string,
+): { teamId: string; channelId: string } | null {
+	// Match format: teams('teamId')/channels('channelId')/messages('messageId')
+	const teamMatch = resourcePath.match(/teams\('([^']+)'\)/);
+	const channelMatch = resourcePath.match(/channels\('([^']+)'\)/);
+
+	if (teamMatch && teamMatch[1] && channelMatch && channelMatch[1]) {
+		return {
+			teamId: decodeURIComponent(teamMatch[1]),
+			channelId: decodeURIComponent(channelMatch[1]),
+		};
+	}
+	return null;
 }
 
 export async function fetchAllChannels(
@@ -83,63 +90,30 @@ export async function getResourcePath(
 		}
 
 		case 'newChannel': {
-			const watchAllTeams = this.getNodeParameter('watchAllTeams', false, {
-				extractValue: true,
-			}) as boolean;
-
-			if (watchAllTeams) {
-				const teams = await fetchAllTeams.call(this);
-				return teams.map((team) => `/teams/${team.id}/channels`);
-			} else {
-				const teamId = this.getNodeParameter('teamId', undefined, { extractValue: true }) as string;
-				return `/teams/${teamId}/channels`;
-			}
+			const teamId = this.getNodeParameter('teamId', undefined, { extractValue: true }) as string;
+			return `/teams/${teamId}/channels`;
 		}
 
 		case 'newChannelMessage': {
-			const watchAllTeams = this.getNodeParameter('watchAllTeams', false, {
+			const teamId = this.getNodeParameter('teamId', undefined, { extractValue: true }) as string;
+			const watchAllChannels = this.getNodeParameter('watchAllChannels', false, {
 				extractValue: true,
 			}) as boolean;
 
-			if (watchAllTeams) {
-				const teams = await fetchAllTeams.call(this);
-				const teamChannels = await Promise.all(
-					teams.map(async (team) => {
-						const channels = await fetchAllChannels.call(this, team.id);
-						return channels.map((channel) => `/teams/${team.id}/channels/${channel.id}/messages`);
-					}),
-				);
-				return teamChannels.flat();
+			if (watchAllChannels) {
+				const channels = await fetchAllChannels.call(this, teamId);
+				return channels.map((channel) => `/teams/${teamId}/channels/${channel.id}/messages`);
 			} else {
-				const teamId = this.getNodeParameter('teamId', undefined, { extractValue: true }) as string;
-				const watchAllChannels = this.getNodeParameter('watchAllChannels', false, {
+				const channelId = this.getNodeParameter('channelId', undefined, {
 					extractValue: true,
-				}) as boolean;
-
-				if (watchAllChannels) {
-					const channels = await fetchAllChannels.call(this, teamId);
-					return channels.map((channel) => `/teams/${teamId}/channels/${channel.id}/messages`);
-				} else {
-					const channelId = this.getNodeParameter('channelId', undefined, {
-						extractValue: true,
-					}) as string;
-					return `/teams/${teamId}/channels/${decodeURIComponent(channelId)}/messages`;
-				}
+				}) as string;
+				return `/teams/${teamId}/channels/${decodeURIComponent(channelId)}/messages`;
 			}
 		}
 
 		case 'newTeamMember': {
-			const watchAllTeams = this.getNodeParameter('watchAllTeams', false, {
-				extractValue: true,
-			}) as boolean;
-
-			if (watchAllTeams) {
-				const teams = await fetchAllTeams.call(this);
-				return teams.map((team) => `/teams/${team.id}/members`);
-			} else {
-				const teamId = this.getNodeParameter('teamId', undefined, { extractValue: true }) as string;
-				return `/teams/${teamId}/members`;
-			}
+			const teamId = this.getNodeParameter('teamId', undefined, { extractValue: true }) as string;
+			return `/teams/${teamId}/members`;
 		}
 
 		default: {

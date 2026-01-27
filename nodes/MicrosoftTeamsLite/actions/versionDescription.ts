@@ -2,7 +2,10 @@
 import { NodeConnectionTypes, type INodeTypeDescription } from 'n8n-workflow';
 
 import * as chatMessage from './chatMessage';
-
+import * as channel from './channel';
+import * as channelMessage from './channelMessage';
+import * as teamMember from './teamMember';
+import * as channelMember from './channelMember';
 
 export const versionDescription: INodeTypeDescription = {
 	displayName: 'Microsoft Teams (Lite)',
@@ -30,13 +33,33 @@ export const versionDescription: INodeTypeDescription = {
 			noDataExpression: true,
 			options: [
 				{
+					name: 'Channel',
+					value: 'channel',
+				},
+				{
+					name: 'Channel Member',
+					value: 'channelMember',
+				},
+				{
+					name: 'Channel Message',
+					value: 'channelMessage',
+				},
+				{
 					name: 'Chat Message',
 					value: 'chatMessage',
+				},
+				{
+					name: 'Team Member',
+					value: 'teamMember',
 				},
 			],
 			default: 'chatMessage',
 		},
 
 		...chatMessage.description,
+		...channel.description,
+		...channelMessage.description,
+		...teamMember.description,
+		...channelMember.description,
 	],
 };
