@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-msteams-lite",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Microsoft Teams (Lite) nodes for n8n - A minimal permission set integration for Microsoft Teams in n8n workflows.",
   "license": "MIT",
   "homepage": "",
