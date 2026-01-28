@@ -19,14 +19,6 @@ export class MicrosoftTeamsLiteOAuth2Api implements ICredentialType {
             default: 'authorizationCode',
         },
         {
-            displayName: 'Callback URL',
-            name: 'oAuthCallbackUrl',
-            type: 'string',
-            default: '',
-            description:
-                'Custom OAuth callback URL. Leave empty to use the default n8n callback URL. Useful when running behind a reverse proxy.',
-        },
-        {
             displayName: 'Authorization URL',
             name: 'authUrl',
             type: 'string',
