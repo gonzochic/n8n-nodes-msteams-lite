@@ -37,7 +37,7 @@ export const versionDescription: INodeTypeDescription = {
 					name: 'Channel',
 					value: 'channel',
 				},
-{
+				{
 					name: 'Channel Message',
 					value: 'channelMessage',
 				},

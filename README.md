@@ -21,6 +21,7 @@ The built-in node covers more operations and works out of the box. This node foc
 | **OAuth2 Scopes** | Pre-defined set that covers all operations | Editable scope field — request only the scopes your workflows actually use |
 | **Trigger: Fetch Full Message** | Returns notification metadata; full content can be fetched in a follow-up step | Built-in **"Fetch Full Message"** toggle retrieves complete message content in one step |
 | **Trigger: Ignore Own Messages** | Not available | **"Ignore Own Messages"** toggle silently drops notifications from the authenticated user, preventing self-triggered loops |
+| **Send to Existing Chat** | Not available | Chat Message Create can target an existing chat (group or one-on-one) by ID, making it easy to reply to trigger outputs |
 | **Team Member Scope** | `TeamMember.ReadWrite.All` | `TeamMember.ReadWriteNonOwnerRole.All` — prevents accidental owner-role escalation |
 | **Permission Transparency** | Scopes managed at the Azure AD level | Clear [permission-to-action mapping](#permission-to-action-mapping) documenting which scopes each operation requires |
 
@@ -31,7 +32,7 @@ The built-in node covers more operations and works out of the box. This node foc
 | Resource | Operations |
 |----------|------------|
 | **Chat** | Create One-on-One, Create Group |
-| **Chat Message** | Create, Get, Get Many |
+| **Chat Message** | Create (to a user or an existing chat), Get, Get Many |
 | **Channel** | Create |
 | **Channel Message** | Create, Get, Get Many |
 | **Team Member** | Add, Remove |
@@ -58,7 +59,8 @@ Use this table to determine which scopes you need based on the features you want
 |--------|-----------------|
 | **Chat Operations** | |
 | Create one-on-one / group chat | `Chat.Create`, `User.Read.All` |
-| Create chat message | `Chat.Create`, `ChatMessage.Send`, `User.Read.All` |
+| Create chat message (to a user) | `Chat.Create`, `ChatMessage.Send`, `User.Read.All` |
+| Create chat message (to an existing chat) | `ChatMessage.Send` |
 | Get/List chat messages | `ChatMessage.Read` |
 | Trigger: New chat | `Chat.ReadWrite` |
 | Trigger: New chat message | `Chat.ReadWrite` (+ `ChatMessage.Read` if using Fetch Full Message) |
