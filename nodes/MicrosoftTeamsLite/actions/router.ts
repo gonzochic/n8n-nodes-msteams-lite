@@ -5,11 +5,12 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
+import * as chat from './chat';
 import * as chatMessage from './chatMessage';
 import * as channel from './channel';
 import * as channelMessage from './channelMessage';
 import * as teamMember from './teamMember';
-import * as channelMember from './channelMember';
+
 import type { MicrosoftTeamsType } from './node.type';
 
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -28,6 +29,9 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 	for (let i = 0; i < items.length; i++) {
 		try {
 			switch (microsoftTeamsTypeData.resource) {
+				case 'chat':
+					responseData = await chat[microsoftTeamsTypeData.operation].execute.call(this, i);
+					break;
 				case 'chatMessage':
 					responseData = await chatMessage[microsoftTeamsTypeData.operation].execute.call(
 						this,
@@ -45,12 +49,6 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 					break;
 				case 'teamMember':
 					responseData = await teamMember[microsoftTeamsTypeData.operation].execute.call(
-						this,
-						i,
-					);
-					break;
-				case 'channelMember':
-					responseData = await channelMember[microsoftTeamsTypeData.operation].execute.call(
 						this,
 						i,
 					);

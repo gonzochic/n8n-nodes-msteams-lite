@@ -4,13 +4,15 @@
 [![npm version](https://img.shields.io/npm/v/n8n-nodes-msteams-lite.svg)](https://www.npmjs.com/package/n8n-nodes-msteams-lite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Microsoft Teams integration for n8n with **minimal permission scopes**.
+Tired of granting your automation tool full access to every chat, file, and channel in your org just to send a Teams message? **n8n-nodes-msteams-lite** gives you Microsoft Teams automation with only the permissions you actually need — nothing more.
 
 ## Why This Node?
 
-Unlike full Microsoft Teams integrations that require broad access to your organization's data, this node uses only the permissions needed for your specific operations. Ideal for security-conscious organizations that need Teams automation without granting extensive access to channels, files, or organizational data.
+The built-in n8n Microsoft Teams node requests broad permission scopes — far more than most workflows actually need. In enterprise environments, that's often a dealbreaker: security teams reject the app registration, IT admins push back, and your automation project stalls before it starts.
 
-## Why Choose This Node Over the Built-in n8n Teams Node?
+This node was built to solve exactly that problem. It lets you request only the scopes your workflows actually use, making Azure AD app approvals fast and painless. No unnecessary access to files, calendars, or org-wide data — just the Teams operations you need, with a permission model your security team will actually sign off on.
+
+## Why Choose This Over the Built-in n8n Teams Node?
 
 ### 1. Minimal Permissions / Least Privilege
 
@@ -43,11 +45,11 @@ Unlike full Microsoft Teams integrations that require broad access to your organ
 
 | Resource | Operations |
 |----------|------------|
+| **Chat** | Create One-on-One, Create Group |
 | **Chat Message** | Create, Get, Get Many |
 | **Channel** | Create |
 | **Channel Message** | Create, Get, Get Many |
 | **Team Member** | Add, Remove |
-| **Channel Member** | Add, Remove |
 
 ### Trigger Events
 
@@ -70,6 +72,7 @@ Use this table to determine which scopes you need based on the features you want
 | Action | Required Scopes |
 |--------|-----------------|
 | **Chat Operations** | |
+| Create one-on-one / group chat | `Chat.Create`, `User.Read.All` |
 | Create chat message | `Chat.Create`, `ChatMessage.Send`, `User.Read.All` |
 | Get/List chat messages | `ChatMessage.Read` |
 | Trigger: New chat | `Chat.ReadWrite` |
@@ -82,7 +85,6 @@ Use this table to determine which scopes you need based on the features you want
 | Trigger: New channel message | `ChannelMessage.Read.All` |
 | **Member Operations** | |
 | Add/Remove team member | `TeamMember.ReadWriteNonOwnerRole.All`, `User.Read.All` |
-| Add/Remove channel member | `ChannelMember.ReadWrite.All`, `User.Read.All` |
 | Trigger: New team member | `TeamMember.ReadWriteNonOwnerRole.All` |
 | **Always Required** | |
 | Token refresh | `offline_access` |
@@ -91,14 +93,13 @@ Use this table to determine which scopes you need based on the features you want
 
 | Scope | Purpose |
 |-------|---------|
-| `Chat.Create` | Create new 1-on-1 and group chats |
+| `Chat.Create` | Create new one-on-one and group chats |
 | `Chat.ReadWrite` | Read and manage chat metadata, required for chat subscriptions |
 | `ChatMessage.Read` | Read messages in chats |
 | `ChatMessage.Send` | Send messages to chats |
 | `Channel.Create` | Create channels in teams |
 | `ChannelMessage.Read.All` | Read messages in channels |
 | `ChannelMessage.Send` | Send messages to channels |
-| `ChannelMember.ReadWrite.All` | Add and remove channel members |
 | `TeamMember.ReadWriteNonOwnerRole.All` | Add and remove team members (non-owner role only) |
 | `User.Read.All` | Look up users for chat creation and member operations |
 | `offline_access` | Maintain access with refresh tokens |
@@ -128,7 +129,7 @@ npm install n8n-nodes-msteams-lite
 3. **Add API permissions**
    - Go to API permissions > Add a permission > Microsoft Graph > Delegated permissions
    - Add only the scopes you need based on the [Permission-to-Action Mapping](#permission-to-action-mapping) table
-   - For all features, add: `Chat.Create`, `Chat.ReadWrite`, `ChatMessage.Read`, `ChatMessage.Send`, `Channel.Create`, `ChannelMessage.Read.All`, `ChannelMessage.Send`, `ChannelMember.ReadWrite.All`, `TeamMember.ReadWriteNonOwnerRole.All`, `User.Read.All`, `offline_access`
+   - For all features, add: `Chat.Create`, `Chat.ReadWrite`, `ChatMessage.Read`, `ChatMessage.Send`, `Channel.Create`, `ChannelMessage.Read.All`, `ChannelMessage.Send`, `TeamMember.ReadWriteNonOwnerRole.All`, `User.Read.All`, `offline_access`
    - Grant admin consent if required by your organization
 
 4. **Create client secret**

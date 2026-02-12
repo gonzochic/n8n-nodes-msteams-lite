@@ -1,11 +1,12 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 import { NodeConnectionTypes, type INodeTypeDescription } from 'n8n-workflow';
 
+import * as chat from './chat';
 import * as chatMessage from './chatMessage';
 import * as channel from './channel';
 import * as channelMessage from './channelMessage';
 import * as teamMember from './teamMember';
-import * as channelMember from './channelMember';
+
 
 export const versionDescription: INodeTypeDescription = {
 	displayName: 'Microsoft Teams (Lite)',
@@ -36,13 +37,13 @@ export const versionDescription: INodeTypeDescription = {
 					name: 'Channel',
 					value: 'channel',
 				},
-				{
-					name: 'Channel Member',
-					value: 'channelMember',
-				},
-				{
+{
 					name: 'Channel Message',
 					value: 'channelMessage',
+				},
+				{
+					name: 'Chat',
+					value: 'chat',
 				},
 				{
 					name: 'Chat Message',
@@ -56,10 +57,11 @@ export const versionDescription: INodeTypeDescription = {
 			default: 'chatMessage',
 		},
 
+		...chat.description,
 		...chatMessage.description,
 		...channel.description,
 		...channelMessage.description,
 		...teamMember.description,
-		...channelMember.description,
+
 	],
 };

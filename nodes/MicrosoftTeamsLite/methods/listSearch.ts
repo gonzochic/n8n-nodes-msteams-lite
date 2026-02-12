@@ -203,27 +203,3 @@ export async function getTeamMembers(
 	return { results };
 }
 
-export async function getChannelMembers(
-	this: ILoadOptionsFunctions,
-	filter?: string,
-): Promise<INodeListSearchResult> {
-	const returnData: INodeListSearchItems[] = [];
-	const teamId = this.getCurrentNodeParameter('teamId', { extractValue: true }) as string;
-	const channelId = this.getCurrentNodeParameter('channelId', { extractValue: true }) as string;
-
-	const { value } = (await microsoftApiRequest.call(
-		this,
-		'GET',
-		`/v1.0/teams/${teamId}/channels/${channelId}/members`,
-	)) as { value: IDataObject[] };
-
-	for (const member of value) {
-		returnData.push({
-			name: `${member.displayName} (${member.email || 'No email'})`,
-			value: member.id as string,
-		});
-	}
-
-	const results = filterSortSearchListItems(returnData, filter);
-	return { results };
-}

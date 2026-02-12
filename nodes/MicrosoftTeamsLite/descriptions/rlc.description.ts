@@ -150,6 +150,33 @@ export const senderRLC: INodeProperties = {
 	],
 };
 
+export const recipientRLC: INodeProperties = {
+	displayName: 'Recipient',
+	name: 'recipient',
+	type: 'resourceLocator',
+	default: { mode: 'list', value: '' },
+	required: true,
+	description: 'Select the recipient from the list or enter their email',
+	modes: [
+		{
+			displayName: 'From List',
+			name: 'list',
+			type: 'list',
+			placeholder: 'Select a user...',
+			typeOptions: {
+				searchListMethod: 'getUsers',
+				searchable: true,
+			},
+		},
+		{
+			displayName: 'By Email',
+			name: 'id',
+			type: 'string',
+			placeholder: 'e.g. user@company.com',
+		},
+	],
+};
+
 export const userRLC: INodeProperties = {
 	displayName: 'User',
 	name: 'userId',
@@ -220,32 +247,3 @@ export const teamMemberRLC: INodeProperties = {
 	],
 };
 
-export const channelMemberRLC: INodeProperties = {
-	displayName: 'Member',
-	name: 'memberId',
-	type: 'resourceLocator',
-	default: { mode: 'list', value: '' },
-	required: true,
-	description: 'Select the channel member from the list or enter their membership ID',
-	typeOptions: {
-		loadOptionsDependsOn: ['teamId.value', 'channelId.value'],
-	},
-	modes: [
-		{
-			displayName: 'From List',
-			name: 'list',
-			type: 'list',
-			placeholder: 'Select a member...',
-			typeOptions: {
-				searchListMethod: 'getChannelMembers',
-				searchable: true,
-			},
-		},
-		{
-			displayName: 'By ID',
-			name: 'id',
-			type: 'string',
-			placeholder: 'e.g. MCMjMiMjZGNhNjE...',
-		},
-	],
-};

@@ -47,7 +47,7 @@ export class MicrosoftTeamsLiteOAuth2Api implements ICredentialType {
             name: 'scope',
             type: 'string',
             default:
-                'Chat.Create ChatMessage.Read ChatMessage.Send Chat.ReadWrite User.Read.All Channel.Create ChannelMessage.Read.All ChannelMessage.Send ChannelMember.ReadWrite.All TeamMember.ReadWriteNonOwnerRole.All offline_access',
+                'Chat.Create ChatMessage.Read ChatMessage.Send Chat.ReadWrite User.Read.All Channel.Create ChannelMessage.Read.All ChannelMessage.Send TeamMember.ReadWriteNonOwnerRole.All offline_access',
             description: 'The scope for the OAuth2 request',
         },
     ];
