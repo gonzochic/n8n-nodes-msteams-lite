@@ -4,40 +4,25 @@
 [![npm version](https://img.shields.io/npm/v/n8n-nodes-msteams-lite.svg)](https://www.npmjs.com/package/n8n-nodes-msteams-lite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Tired of granting your automation tool full access to every chat, file, and channel in your org just to send a Teams message? **n8n-nodes-msteams-lite** gives you Microsoft Teams automation with only the permissions you actually need — nothing more.
+A community node for n8n that focuses on **least-privilege permissions** and adds a few usability features on top. If your organisation requires tight control over which Microsoft Graph scopes an app registration requests, this node lets you tailor them to exactly what your workflows need.
 
 ## Why This Node?
 
-The built-in n8n Microsoft Teams node requests broad permission scopes — far more than most workflows actually need. In enterprise environments, that's often a dealbreaker: security teams reject the app registration, IT admins push back, and your automation project stalls before it starts.
+The built-in n8n Microsoft Teams node is a great general-purpose integration that covers a wide range of Teams operations. This community node takes a different approach: it is designed for environments where **least-privilege access** is a hard requirement — for example when security teams need to review and approve every OAuth scope before an app registration goes live.
 
-This node was built to solve exactly that problem. It lets you request only the scopes your workflows actually use, making Azure AD app approvals fast and painless. No unnecessary access to files, calendars, or org-wide data — just the Teams operations you need, with a permission model your security team will actually sign off on.
+In addition to customisable scopes, it ships with a few usability improvements for common trigger-based workflows.
 
-## Why Choose This Over the Built-in n8n Teams Node?
+## How Does This Compare to the Built-in n8n Teams Node?
 
-### 1. Minimal Permissions / Least Privilege
+The built-in node covers more operations and works out of the box. This node focuses on permission control and adds trigger conveniences. Pick whichever fits your use case.
 
-- Only request the scopes you actually need
-- Customize permissions based on your specific use case
-- Easier approval from security teams and IT admins
-- Audit-friendly permission model
-
-### 2. Enhanced Trigger Functionality
-
-- **"Fetch Full Message"** option automatically retrieves complete message content on trigger
-- No need for a separate "Get Message" node after the trigger
-- Works for both chat and channel messages
-
-### 3. Non-Owner Role for Team Members
-
-- Uses `TeamMember.ReadWriteNonOwnerRole.All` instead of `TeamMember.ReadWrite.All`
-- Cannot accidentally promote users to team owners
-- Safer for automated member management
-
-### 4. Granular Control
-
-- Choose exactly which features you need
-- Remove unused scopes from your Azure AD app registration
-- Clear mapping between actions and required permissions (see table below)
+| Capability | Built-in Node | This Node |
+|---|---|---|
+| **OAuth2 Scopes** | Pre-defined set that covers all operations | Editable scope field — request only the scopes your workflows actually use |
+| **Trigger: Fetch Full Message** | Returns notification metadata; full content can be fetched in a follow-up step | Built-in **"Fetch Full Message"** toggle retrieves complete message content in one step |
+| **Trigger: Ignore Own Messages** | Not available | **"Ignore Own Messages"** toggle silently drops notifications from the authenticated user, preventing self-triggered loops |
+| **Team Member Scope** | `TeamMember.ReadWrite.All` | `TeamMember.ReadWriteNonOwnerRole.All` — prevents accidental owner-role escalation |
+| **Permission Transparency** | Scopes managed at the Azure AD level | Clear [permission-to-action mapping](#permission-to-action-mapping) documenting which scopes each operation requires |
 
 ## Features
 
@@ -61,7 +46,7 @@ This node was built to solve exactly that problem. It lets you request only the 
 | **New Channel Message** | Watch all channels or a specific channel for new messages |
 | **New Team Member** | Fires when a new member joins a team |
 
-**Note:** Chat and channel message triggers support the **"Fetch Full Message"** option to automatically retrieve complete message content.
+**Note:** Chat and channel message triggers support the **"Fetch Full Message"** option to automatically retrieve complete message content and the **"Ignore Own Messages"** option to silently drop notifications caused by the authenticated user (useful to prevent loops when a workflow both sends and listens for messages).
 
 ## Permissions
 
@@ -116,7 +101,7 @@ npm install n8n-nodes-msteams-lite
 
 ## Credentials Setup
 
-> **Important:** This node requires its own credential type ("Reduced Permissions Microsoft Teams OAuth2 API"). You cannot use the built-in Microsoft Teams OAuth2 credentials that ship with n8n, as those require broader permission scopes.
+> **Important:** This node uses its own credential type ("Reduced Permissions Microsoft Teams OAuth2 API") with a customisable scope field. It is not compatible with the built-in Microsoft Teams OAuth2 credentials, so you will need a separate Azure AD app registration.
 
 1. **Register an Azure AD application**
    - Go to [Azure Portal](https://portal.azure.com/) > App registrations > New registration

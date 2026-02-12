@@ -263,6 +263,19 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
 					},
 				},
 			},
+			{
+				displayName: 'Ignore Own Messages',
+				name: 'ignoreOwnMessages',
+				type: 'boolean',
+				default: false,
+				description:
+					'Whether to ignore messages sent by the authenticated user. Useful to prevent loops when a workflow both sends and listens for messages.',
+				displayOptions: {
+					show: {
+						event: ['newChatMessage', 'newChannelMessage'],
+					},
+				},
+			},
 		],
 	};
 
@@ -393,11 +406,14 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
 
 		const event = this.getNodeParameter('event', 'newChatMessage') as string;
 		const fetchFullMessage = this.getNodeParameter('fetchFullMessage', false) as boolean;
+		const ignoreOwnMessages = this.getNodeParameter('ignoreOwnMessages', false) as boolean;
 
 		const eventNotifications = req.body.value as WebhookNotification[];
+		const isMessageEvent = ['newChatMessage', 'newChannelMessage'].includes(event);
+		const needsFetch = isMessageEvent && (fetchFullMessage || ignoreOwnMessages);
 
-		// If fetchFullMessage is disabled or event doesn't support it, return notification data only
-		if (!fetchFullMessage || !['newChatMessage', 'newChannelMessage'].includes(event)) {
+		// If no fetch needed, return notification data only
+		if (!needsFetch) {
 			const response: IWebhookResponseData = {
 				workflowData: eventNotifications.map((notification) => [
 					{
@@ -408,88 +424,116 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
 			return response;
 		}
 
+		// Fetch authenticated user ID once if we need to filter own messages
+		let selfId: string | undefined;
+		if (ignoreOwnMessages) {
+			const me = (await microsoftApiRequest.call(this, 'GET', '/v1.0/me')) as IDataObject;
+			selfId = me.id as string;
+		}
+
 		// Fetch full message content for each notification
-		const workflowData = await Promise.all(
-			eventNotifications.map(async (notification) => {
-				try {
-					let fullMessage: ChatMessage;
+		const workflowData = (
+			await Promise.all(
+				eventNotifications.map(async (notification) => {
+					try {
+						let fullMessage: ChatMessage;
 
-					if (event === 'newChatMessage') {
-						// Extract chatId from notification resource path
-						const chatId = extractChatIdFromResource(notification.resource);
-						const messageId = notification.resourceData?.id;
+						if (event === 'newChatMessage') {
+							// Extract chatId from notification resource path
+							const chatId = extractChatIdFromResource(notification.resource);
+							const messageId = notification.resourceData?.id;
 
-						if (!chatId || !messageId) {
+							if (!chatId || !messageId) {
+								return [
+									{
+										json: {
+											...(notification.resourceData as IDataObject),
+											_subscriptionId: notification.subscriptionId,
+											_tenantId: notification.tenantId,
+											_fetchError: 'Could not extract chatId or messageId from notification',
+											_originalNotification: notification,
+										} as IDataObject,
+									} as INodeExecutionData,
+								];
+							}
+
+							fullMessage = (await microsoftApiRequest.call(
+								this,
+								'GET',
+								`/v1.0/chats/${chatId}/messages/${messageId}`,
+							)) as ChatMessage;
+						} else {
+							// newChannelMessage - extract teamId and channelId
+							const channelInfo = extractChannelInfoFromResource(notification.resource);
+							const messageId = notification.resourceData?.id;
+
+							if (!channelInfo || !messageId) {
+								return [
+									{
+										json: {
+											...(notification.resourceData as IDataObject),
+											_subscriptionId: notification.subscriptionId,
+											_tenantId: notification.tenantId,
+											_fetchError:
+												'Could not extract teamId, channelId or messageId from notification',
+											_originalNotification: notification,
+										} as IDataObject,
+									} as INodeExecutionData,
+								];
+							}
+
+							fullMessage = (await microsoftApiRequest.call(
+								this,
+								'GET',
+								`/v1.0/teams/${channelInfo.teamId}/channels/${channelInfo.channelId}/messages/${messageId}`,
+							)) as ChatMessage;
+						}
+
+						// Skip messages sent by the authenticated user
+						if (selfId && fullMessage.from?.user?.id === selfId) {
+							return null;
+						}
+
+						if (fetchFullMessage) {
 							return [
 								{
 									json: {
-										...(notification.resourceData as IDataObject),
+										...fullMessage,
 										_subscriptionId: notification.subscriptionId,
 										_tenantId: notification.tenantId,
-										_fetchError: 'Could not extract chatId or messageId from notification',
-										_originalNotification: notification,
 									} as IDataObject,
 								} as INodeExecutionData,
 							];
 						}
 
-						fullMessage = (await microsoftApiRequest.call(
-							this,
-							'GET',
-							`/v1.0/chats/${chatId}/messages/${messageId}`,
-						)) as ChatMessage;
-					} else {
-						// newChannelMessage - extract teamId and channelId
-						const channelInfo = extractChannelInfoFromResource(notification.resource);
-						const messageId = notification.resourceData?.id;
-
-						if (!channelInfo || !messageId) {
-							return [
-								{
-									json: {
-										...(notification.resourceData as IDataObject),
-										_subscriptionId: notification.subscriptionId,
-										_tenantId: notification.tenantId,
-										_fetchError:
-											'Could not extract teamId, channelId or messageId from notification',
-										_originalNotification: notification,
-									} as IDataObject,
-								} as INodeExecutionData,
-							];
-						}
-
-						fullMessage = (await microsoftApiRequest.call(
-							this,
-							'GET',
-							`/v1.0/teams/${channelInfo.teamId}/channels/${channelInfo.channelId}/messages/${messageId}`,
-						)) as ChatMessage;
+						// ignoreOwnMessages is enabled but fetchFullMessage is not — return metadata only
+						return [
+							{
+								json: (notification.resourceData as IDataObject) ?? notification,
+							} as INodeExecutionData,
+						];
+					} catch (error) {
+						// On API error, return notification data with error info
+						return [
+							{
+								json: {
+									...(notification.resourceData as IDataObject),
+									_subscriptionId: notification.subscriptionId,
+									_tenantId: notification.tenantId,
+									_fetchError: (error as Error).message || 'Failed to fetch full message',
+									_originalNotification: notification,
+								} as IDataObject,
+							} as INodeExecutionData,
+						];
 					}
+				}),
+			)
+		).filter((item) => item !== null);
 
-					return [
-						{
-							json: {
-								...fullMessage,
-								_subscriptionId: notification.subscriptionId,
-								_tenantId: notification.tenantId,
-							} as IDataObject,
-						} as INodeExecutionData,
-					];
-				} catch (error) {
-					// On API error, return notification data with error info
-					return [
-						{
-							json: {
-								...(notification.resourceData as IDataObject),
-								_subscriptionId: notification.subscriptionId,
-								_tenantId: notification.tenantId,
-								_fetchError: (error as Error).message || 'Failed to fetch full message',
-								_originalNotification: notification,
-							} as IDataObject,
-						} as INodeExecutionData,
-					];
-				}
-			}),
-		);
+		// If all notifications were filtered out, don't trigger the workflow
+		if (workflowData.length === 0) {
+			return { noWebhookResponse: true };
+		}
 
 		return { workflowData };
 	}
