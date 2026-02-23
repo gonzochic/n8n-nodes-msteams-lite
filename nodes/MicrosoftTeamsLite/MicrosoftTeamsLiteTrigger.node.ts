@@ -18,6 +18,7 @@ import type { WebhookNotification, SubscriptionResponse, ChatMessage } from './h
 import { SUBSCRIPTION_VALIDITY_THRESHOLD_MS } from './helpers/types';
 import {
 	createSubscription,
+	renewSubscription,
 	getResourcePath,
 	extractChatIdFromResource,
 	extractChannelInfoFromResource,
@@ -408,7 +409,55 @@ export class MicrosoftTeamsLiteTrigger implements INodeType {
 		const fetchFullMessage = this.getNodeParameter('fetchFullMessage', false) as boolean;
 		const ignoreOwnMessages = this.getNodeParameter('ignoreOwnMessages', false) as boolean;
 
-		const eventNotifications = req.body.value as WebhookNotification[];
+		const allNotifications = req.body.value as WebhookNotification[];
+
+		// Separate lifecycle notifications from regular notifications
+		const lifecycleNotifications = allNotifications.filter((n) => n.lifecycleEvent);
+		const eventNotifications = allNotifications.filter((n) => !n.lifecycleEvent);
+
+		// Handle lifecycle notifications
+		if (lifecycleNotifications.length > 0) {
+			const webhookUrl = this.getNodeWebhookUrl('default') as string;
+
+			await Promise.all(
+				lifecycleNotifications.map(async (notification) => {
+					try {
+						if (notification.lifecycleEvent === 'reauthorizationRequired') {
+							await renewSubscription.call(this, notification.subscriptionId);
+						} else if (notification.lifecycleEvent === 'subscriptionRemoved') {
+							// Recreate subscription using the resource from the notification
+							await createSubscription.call(
+								this as unknown as IHookFunctions,
+								webhookUrl,
+								notification.resource,
+							);
+						}
+						// 'missed' lifecycle events don't require action — Graph will resend
+					} catch {
+						// Renewal/recreation failed — subscription will be recovered on next
+						// workflow activation via checkExists()
+					}
+				}),
+			);
+
+			// If there are no regular notifications, don't trigger the workflow
+			if (eventNotifications.length === 0) {
+				return { noWebhookResponse: true };
+			}
+		}
+
+		// Opportunistic renewal: if any subscription expires within 24 hours, renew it
+		const RENEWAL_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+		for (const notification of eventNotifications) {
+			if (notification.subscriptionExpirationDateTime) {
+				const expiresAt = new Date(notification.subscriptionExpirationDateTime).getTime();
+				if (expiresAt - Date.now() < RENEWAL_THRESHOLD_MS) {
+					// Fire-and-forget renewal — don't block notification processing
+					renewSubscription.call(this, notification.subscriptionId).catch(() => {});
+				}
+			}
+		}
+
 		const isMessageEvent = ['newChatMessage', 'newChannelMessage'].includes(event);
 		const needsFetch = isMessageEvent && (fetchFullMessage || ignoreOwnMessages);
 

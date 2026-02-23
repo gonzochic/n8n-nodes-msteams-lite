@@ -1,4 +1,4 @@
-import type { IHookFunctions, IDataObject } from 'n8n-workflow';
+import type { IHookFunctions, IWebhookFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
 import type { ChannelResponse, SubscriptionResponse } from './types';
@@ -62,6 +62,24 @@ export async function createSubscription(
 		'POST',
 		'/v1.0/subscriptions',
 		body,
+	)) as SubscriptionResponse;
+
+	return response;
+}
+
+export async function renewSubscription(
+	this: IHookFunctions | IWebhookFunctions,
+	subscriptionId: string,
+): Promise<SubscriptionResponse> {
+	const expirationTime = new Date(
+		Date.now() + SUBSCRIPTION_EXPIRATION_MINUTES * 60 * 1000,
+	).toISOString();
+
+	const response = (await microsoftApiRequest.call(
+		this as unknown as IHookFunctions,
+		'PATCH',
+		`/v1.0/subscriptions/${subscriptionId}`,
+		{ expirationDateTime: expirationTime },
 	)) as SubscriptionResponse;
 
 	return response;
